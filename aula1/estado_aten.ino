@@ -1,18 +1,30 @@
 /*
   Etapa - Estado de Atenção
-  Semáforo em modo amarelo piscante usando o LED built-in da ESP32-C3.
+  Semáforo em modo amarelo piscante usando o LED built-in RGB da ESP32-C3.
 */
 
-#define PIN_YELLOW LED_BUILTIN
+#include <Adafruit_NeoPixel.h>
+
+#define PIN_YELLOW 8
+#define LED_COUNT 1
+
+Adafruit_NeoPixel led(LED_COUNT, PIN_YELLOW, NEO_GRB + NEO_KHZ800);
 
 void setup() {
-  pinMode(PIN_YELLOW, OUTPUT);
+  led.begin();
 }
 
 void loop() {
-  digitalWrite(PIN_YELLOW, HIGH);
+
+  // Amarelo ligado
+  led.setPixelColor(0, led.Color(255, 180, 0));
+  led.show();
+
   delay(500);
 
-  digitalWrite(PIN_YELLOW, LOW);
+  // LED apagado
+  led.clear();
+  led.show();
+
   delay(500);
 }
