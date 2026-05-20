@@ -2,9 +2,9 @@
   Semáforo Completo - ESP32-C3 RGB
 
   Sequência:
-  Verde -> 3s
-  Amarelo -> 1s
-  Vermelho -> 4s
+  Verde 3s
+  Amarelo 1s
+  Vermelho 4s
 */
 
 #include <Adafruit_NeoPixel.h>
