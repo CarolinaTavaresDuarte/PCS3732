@@ -1,40 +1,24 @@
 /*
-  Semáforo Completo - ESP32-C3 RGB
-
-  Sequência:
-  Verde 3s
-  Amarelo 1s
-  Vermelho 4s
+Semáforo com LED RGB do ESP32-C3
+Sem bibliotecas externas
 */
 
-#include <Adafruit_NeoPixel.h>
-
-#define LED_PIN 8
-#define LED_COUNT 1
-
-Adafruit_NeoPixel led(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+#define RGB_BUILTIN 8   // GPIO do LED RGB integrado
 
 void setup() {
-  led.begin();
 }
 
 void loop() {
 
   // VERDE
-  led.setPixelColor(0, led.Color(0, 255, 0));
-  led.show();
-
+  rgbLedWrite(RGB_BUILTIN, 0, 255, 0);
   delay(3000);
 
   // AMARELO
-  led.setPixelColor(0, led.Color(255, 180, 0));
-  led.show();
-
+  rgbLedWrite(RGB_BUILTIN, 255, 255, 0);
   delay(1000);
 
   // VERMELHO
-  led.setPixelColor(0, led.Color(255, 0, 0));
-  led.show();
-
+  rgbLedWrite(RGB_BUILTIN, 255, 0, 0);
   delay(4000);
 }
