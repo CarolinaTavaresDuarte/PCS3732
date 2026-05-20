@@ -1,5 +1,5 @@
 /*
-  Semáforo Completo - ESP32-C3
+  Semáforo Completo - ESP32-C3 RGB
 
   Sequência:
   Verde -> 3s
@@ -7,38 +7,34 @@
   Vermelho -> 4s
 */
 
-#define PIN_GREEN   4
-#define PIN_YELLOW  5
-#define PIN_RED     6
+#include <Adafruit_NeoPixel.h>
+
+#define LED_PIN 8
+#define LED_COUNT 1
+
+Adafruit_NeoPixel led(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup() {
-
-  pinMode(PIN_GREEN, OUTPUT);
-  pinMode(PIN_YELLOW, OUTPUT);
-  pinMode(PIN_RED, OUTPUT);
-
+  led.begin();
 }
 
 void loop() {
 
-  // ESTADO VERDE
-  digitalWrite(PIN_GREEN, HIGH);
-  digitalWrite(PIN_YELLOW, LOW);
-  digitalWrite(PIN_RED, LOW);
+  // VERDE
+  led.setPixelColor(0, led.Color(0, 255, 0));
+  led.show();
 
   delay(3000);
 
-  // ESTADO AMARELO
-  digitalWrite(PIN_GREEN, LOW);
-  digitalWrite(PIN_YELLOW, HIGH);
-  digitalWrite(PIN_RED, LOW);
+  // AMARELO
+  led.setPixelColor(0, led.Color(255, 180, 0));
+  led.show();
 
   delay(1000);
 
-  // ESTADO VERMELHO
-  digitalWrite(PIN_GREEN, LOW);
-  digitalWrite(PIN_YELLOW, LOW);
-  digitalWrite(PIN_RED, HIGH);
+  // VERMELHO
+  led.setPixelColor(0, led.Color(255, 0, 0));
+  led.show();
 
   delay(4000);
 }
