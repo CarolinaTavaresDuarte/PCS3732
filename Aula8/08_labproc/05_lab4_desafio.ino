@@ -29,18 +29,11 @@
 #define NOPS  4          /* soma, subtracao, multiplicacao, fatorial          */
 #define NLARG 4          /* 8, 16, 32, 64 bits                                */
 
-/* ---------------------------------------------------------------------------
- *  Utilitario: imprime os 'n' bits menos significativos de v (MSB primeiro).
- *  Para valores negativos, isso ja e a representacao em complemento de dois.
- * ------------------------------------------------------------------------- */
 void print_bits(long long v, int n) {
     for (int i = n - 1; i >= 0; i--)
         putchar((v >> i) & 1LL ? '1' : '0');
 }
 
-/* ---------------------------------------------------------------------------
- *  Estatistica para a Atividade 2
- * ------------------------------------------------------------------------- */
 static double tempo_ns(struct timespec t0, struct timespec t1) {
     return (t1.tv_sec - t0.tv_sec) * 1e9 + (t1.tv_nsec - t0.tv_nsec);
 }
@@ -55,11 +48,6 @@ static double desvio(const double *v, int n, double m) {
     return sqrt(s / (n - 1));            /* desvio padrao amostral */
 }
 
-/* ---------------------------------------------------------------------------
- *  Geradores de benchmark (macros).
- *  Operandos declarados 'volatile' para FORCAR a operacao a acontecer a cada
- *  iteracao (senao o compilador pre-calcula a conta e mede so o laco).
- * ------------------------------------------------------------------------- */
 #define BENCH_BIN(NOME, TIPO, OP)                                    \
     static double NOME(void) {                                       \
         volatile TIPO a = 11, b = 3, sink = 0;                       \
@@ -109,9 +97,6 @@ static double (*bench_funcs[NOPS][NLARG])(void) = {
 static const char *nomes_op[NOPS]    = { "Soma", "Subtracao", "Multiplic.", "Fatorial" };
 static const char *nomes_bits[NLARG] = { "8 bits", "16 bits", "32 bits", "64 bits" };
 
-/* ===========================================================================
- *  ATIVIDADE 1 e 4 - Calculadora interativa
- * ========================================================================= */
 static void modo_calculadora(void) {
     char op;
     long long a = 0, b = 0;
@@ -173,9 +158,6 @@ static void modo_calculadora(void) {
     if (overflow)  printf(">> OVERFLOW: valor real acima nao cabe em 4 bits.\n");
 }
 
-/* ===========================================================================
- *  ATIVIDADE 2 - Benchmark de tempo
- * ========================================================================= */
 static void modo_benchmark(void) {
     printf("\n===== BENCHMARK - Raspberry Pi 3 (ARMv8, 64 bits) =====\n");
     printf("ITER=%ld operacoes/medida, REPS=%d medidas. Aguarde...\n\n", ITER, REPS);
@@ -207,9 +189,6 @@ static void modo_benchmark(void) {
     printf(" - Compare com o ESP32 (160 MHz) x Rasp3 (1.2 GHz): ~7.5x de clock.\n");
 }
 
-/* ===========================================================================
- *  Evidencias prontas p/ o relatorio (overflow, compl.2, numeros grandes)
- * ========================================================================= */
 static void modo_demo(void) {
     printf("\n===== CASOS ESPECIAIS (evidencias p/ relatorio) =====\n");
 
@@ -239,9 +218,6 @@ static void modo_demo(void) {
     printf("    Em C tratamos no software (checando o divisor antes de dividir).\n");
 }
 
-/* ===========================================================================
- *  MENU
- * ========================================================================= */
 int main(void) {
     int opcao = -1;
     printf("=========================================================\n");
@@ -268,186 +244,4 @@ int main(void) {
     } while (opcao != 0);
 
     return 0;
-}
-
-
-Em qua., 1 de jul. de 2026 às 13:40, Paulo Henrique Mota de Oliveira <paulo.mota028@usp.br> escreveu:
-/*
- * Calculadora Binaria + Benchmark - Raspberry Pi 3 (ARM Cortex-A53)
- * Cobre as partes EXECUTAVEIS do lab:
- *   - Atividade 1: operacoes (+, -, *, !) em 4 bits, teclado -> monitor
- *   - Atividade 4: divisao (/) e tratamento de divisao por zero
- *   - Atividade 2: benchmark de tempo com media e desvio padrao, p/ varias larguras
- *
- * Compilar:  gcc -O2 -Wall calc.c -o calc -lm
- * Rodar:     ./calc
- */
-
-#include <stdio.h>
-#include <stdint.h>
-#include <time.h>
-#include <math.h>
-
-/* ---------- utilitarios ---------- */
-
-void print_bits(long long v, int n) {
-    for (int i = n - 1; i >= 0; i--)
-        putchar((v >> i) & 1LL ? '1' : '0');
-}
-
-/* ---------- Atividade 1 e 4: operacoes interativas ---------- */
-
-void modo_calculadora(void) {
-    char op;
-    long long a = 0, b = 0;
-
-    printf("\nOperacao (+ - * / !): ");
-    if (scanf(" %c", &op) != 1) return;
-
-    if (op == '!') {
-        printf("Operando n (0-15): ");
-        if (scanf("%lld", &a) != 1) return;
-    } else {
-        printf("Operando A (0-15): ");
-        if (scanf("%lld", &a) != 1) return;
-        printf("Operando B (0-15): ");
-        if (scanf("%lld", &b) != 1) return;
-    }
-
-    long long r = 0;
-    int overflow = 0;
-    int valido = 1;
-
-    switch (op) {
-        case '+': r = a + b; overflow = (r > 15 || r < -8); break;
-        case '-': r = a - b; overflow = (r < -8 || r > 7); break;
-        case '*': r = a * b; overflow = (r > 15 || r < -8); break;
-        case '!':
-            r = 1;
-            for (long long i = 2; i <= a; i++) r *= i;
-            overflow = (r > 15);
-            break;
-        case '/':
-            if (b == 0) {
-                /* Atividade 4: divisao por zero.
-                   No ARMv8 a instrucao SDIV/UDIV devolveria 0 e NAO gera excecao.
-                   Em C, porem, dividir por zero e comportamento indefinido e pode
-                   abortar o programa (SIGFPE). Por isso tratamos ANTES, no software. */
-                printf("\n>> ERRO: divisao por zero!\n");
-                printf("   O programa NAO travou porque tratamos o caso no codigo.\n");
-                printf("   (Curiosidade: a instrucao ARMv8 UDIV/SDIV devolveria 0 sem excecao;\n");
-                printf("    o RISC-V devolveria todos os bits em 1. Nenhum dos dois gera trap.)\n");
-                valido = 0;
-            } else {
-                r = a / b;
-            }
-            break;
-        default:
-            printf("\nOperacao invalida.\n");
-            valido = 0;
-    }
-
-    if (!valido) return;
-
-    printf("\n----- RESULTADO -----\n");
-    printf("Decimal: %lld\n", r);
-    printf("4 bits (compl. 2): ");
-    print_bits(r, 4);
-    printf("\n");
-
-    if (op == '/') {
-        long long resto = a % b;
-        printf("Resto da divisao: %lld\n", resto);
-    }
-
-    if (overflow) {
-        printf(">> OVERFLOW: nao cabe em 4 bits (valor real acima).\n");
-    }
-}
-
-
-Em qua., 1 de jul. de 2026 às 13:26, Paulo Henrique Mota de Oliveira <paulo.mota028@usp.br> escreveu:
-/*
- * Calculadora Binaria de 4 bits - Raspberry Pi 3 (ARM Cortex-A53)
- * Operacoes: soma (+), subtracao (-), multiplicacao (*), fatorial (!)
- * Entrada pelo teclado (stdin), saida no monitor (stdout).
- *
- * Compilar: gcc -Wall calc.c -o calc
- * Rodar: ./calc
- */
- 
-#include <stdio.h>
- 
-/* Imprime os 'n' bits menos significativos de v (MSB primeiro).
- Para valores negativos, ja e a representacao em complemento de dois. */
-void print_bits(long long v, int n) {
- for (int i = n - 1; i >= 0; i--)
- putchar((v >> i) & 1LL ? '1' : '0');
-}
- 
-int main(void) {
- char op;
- int a = 0, b = 0;
- 
- printf("=== Calculadora Binaria 4 bits - Raspberry Pi 3 (ARM Cortex-A53) ===\n");
- printf("Convencao: operandos 0 a 15; resultado em complemento de dois de 4 bits.\n");
- printf("Operacoes: + - * ! (o fatorial usa 1 operando)\n\n");
- 
- printf("Operacao (+ - * !): ");
- if (scanf(" %c", &op) != 1) return 1;
- 
- if (op == '!') {
- printf("Operando n (0-15): ");
- if (scanf("%d", &a) != 1) return 1;
- } else {
- printf("Operando A (0-15): ");
- if (scanf("%d", &a) != 1) return 1;
- printf("Operando B (0-15): ");
- if (scanf("%d", &b) != 1) return 1;
- }
- 
- if (a < 0 || a > 15 || (op != '!' && (b < 0 || b > 15)))
- printf("\nAviso: operando fora de 0-15; o resultado pode nao refletir 4 bits.\n");
- 
- long long r = 0; /* registrador de 64 bits nativo do A53 */
- int overflow = 0;
- 
- switch (op) {
- case '+':
- r = (long long)a + b; /* soma binaria direta */
- overflow = (r > 15); /* carry-out do bit 3 estoura o nibble */
- break;
- case '-':
- r = (long long)a - b; /* a - b == a + (~b + 1) em complemento de dois */
- overflow = (r < -8); /* estoura a faixa de 4 bits com sinal [-8, +7] */
- break;
- case '*':
- r = (long long)a * b; /* produto: no assembly vira shift-and-add */
- overflow = (r > 15);
- break;
- case '!':
- r = 1;
- for (int i = 2; i <= a; i++) r *= i; /* loop iterativo */
- overflow = (r > 15);
- break;
- default:
- printf("\nOperacao invalida.\n");
- return 1;
- }
- 
- printf("\n----- RESULTADO -----\n");
- printf("Decimal (real): %lld\n", r);
- printf("4 bits (compl. 2): ");
- print_bits(r, 4);
- printf(" <- o que caberia no hardware de 4 bits\n");
- 
- if (overflow) {
- long long mag = (r < 0) ? -r : r;
- int nbits = 0;
- while (mag > 0) { mag >>= 1; nbits++; }
- printf("\n>> OVERFLOW: nao cabe em 4 bits.\n");
- printf(" Valor real: %lld (hex 0x%llX)\n", r, r);
- printf(" Precisa de %d bit(s)%s.\n", nbits, (r < 0 ? " + sinal" : ""));
- }
- return 0;
 }
