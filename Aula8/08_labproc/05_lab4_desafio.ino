@@ -1,33 +1,12 @@
-/*
- * ============================================================================
- *  Calculadora Binaria + Benchmark  -  Raspberry Pi 3 (ARM Cortex-A53, ARMv8)
- *  PCS3732 - Laboratorio de Processadores
- * ============================================================================
- *
- *  Este UNICO arquivo cobre as partes EXECUTAVEIS do laboratorio:
- *    - Atividade 1: operacoes +, -, *, ! em 4 bits (teclado -> monitor)
- *    - Atividade 4: divisao (/) e tratamento de divisao por zero
- *    - Atividade 2: benchmark de tempo (media e desvio padrao) p/ 8..64 bits
- *
- *  NAO cobre (nao sao codigo em C): comparacao de assembly ARM x RISC-V no
- *  simulador (Ativ. 3), texto/diagramas/ABNT (Ativ. 5) e o hardware do
- *  desafio - teclado matricial + LCD I2C (Ativ. 6).
- *
- *  Compilar:  gcc -O2 -Wall calc.c -o calc -lm
- *  Rodar:     ./calc
- *  (o -lm eh obrigatorio: usamos sqrt() no desvio padrao)
- * ============================================================================
- */
-
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
 #include <math.h>
 
-#define ITER  5000000L   /* operacoes por medida (aumente p/ mais precisao)   */
-#define REPS  25         /* medidas repetidas p/ media e desvio padrao        */
-#define NOPS  4          /* soma, subtracao, multiplicacao, fatorial          */
-#define NLARG 4          /* 8, 16, 32, 64 bits                                */
+#define ITER  5000000L 
+#define REPS  25 
+#define NOPS  4 
+#define NLARG 4
 
 void print_bits(long long v, int n) {
     for (int i = n - 1; i >= 0; i--)
